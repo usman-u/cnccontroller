@@ -85,6 +85,61 @@ def send_commands():
                 # duet_telnet.write("G91 G1 X0.5".encode('utf-8') + b'\n')
                 gcode += "X0.5"
 
+
+            # Left joystick's Y-axis
+
+            left_y_axis = button_states.get("ABS_Y", 0)
+            if left_y_axis != 0:
+                # print(f"Y axis movement: {left_y_axis}")
+
+                gcode += "F9000"
+
+                # UP
+                if left_y_axis > 0 and left_y_axis <= 21000:
+                    print("Y axis UP 1mm")
+                    gcode += "Y1"
+
+                if left_y_axis > 0 and left_y_axis >= 21000:
+                    print("Y axis UP 5mm")
+                    gcode += "Y6"
+
+                # DOWN
+                if left_y_axis < 0 and left_y_axis >= -21000:
+                    print("Y axis DOWN 1mm")
+                    gcode += "Y-1"
+
+                if left_y_axis < 0 and left_y_axis <= -21000:
+                    print("Y axis DOWN 5mm")
+                    gcode += "Y-6"
+
+
+
+            # Left joystick's X-axis
+
+            left_x_axis = button_states.get("ABS_X", 0)
+            if left_x_axis != 0:
+                # print(f"Y axis movement: {left_y_axis}")
+
+                gcode += "F9000"
+
+                # LEFT
+                if left_x_axis < 0 and left_x_axis >= -21000:
+                    print("X axis LEFT 1mm")
+                    gcode += "X-1"
+
+                if left_x_axis < 0 and left_x_axis <= -21000:
+                    print("X axis LEFT 5mm")
+                    gcode += "X-6"
+
+                # RIGHT
+                if left_x_axis > 0 and left_x_axis <= 21000:
+                    print("X axis RIGHT 1mm")
+                    gcode += "X1"
+
+                if left_x_axis > 0 and left_x_axis >= 21000:
+                    print("X axis RIGHT 5mm")
+                    gcode += "X6"
+
             duet_telnet.write(gcode.encode('utf-8') + b'\n')
 
             # BTN_TR (Homing All Axes)
@@ -103,8 +158,17 @@ def send_commands():
                 duet_telnet.write("G92 X800 Y1270 Z94\n".encode('utf-8'))
                 duet_telnet.write("G90\n".encode('utf-8'))
 
+            # BTN_TL (Go to Work XYZ position)
+            btn_tl = button_states.get("BTN_TL", 0)
+            if btn_tl == 1:
+                duet_telnet.write("G1 H1 Z1500 F1500 ; raise the Z to the highest position\n".encode('utf-8'))
+                duet_telnet.write("G1 X0 Y0 F1500  go directly above the work zero position\n".encode('utf-8'))
+                duet_telnet.write("G1 Z0 F1500 ; go to the work Z zero position \n".encode('utf-8'))
+
+                
+
         # Add a short delay to control the frequency of command sending
-        time.sleep(0.15)  # Adjust the sleep interval as needed
+        time.sleep(0.15)
 
 # Create and start the button monitoring thread
 monitor_thread = threading.Thread(target=button_monitor)
